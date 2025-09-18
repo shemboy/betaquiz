@@ -174,8 +174,7 @@ $questions = [
     [
         'id' => 17,
         'type' => 'fill',
-        'q' => 'What is the code output?
-        printf("Hello World! I am learning C.");',
+        'q' => 'What is the code output? printf("Hello World! I am learning C.");',
         'answer' => 'Hello World! I am learning C.'
     ],
     [
@@ -193,17 +192,13 @@ $questions = [
     [
         'id' => 19,
         'type' => 'fill',
-        'q' => 'Use the correct format specifier to output the value of myNum: 
-            int myNum = 15;
-            printf(" ", myNum);',
+        'q' => 'Use the correct format specifier to output the value of myNum: int myNum = 15; printf(" ", myNum);',
         'answer' => '%d'
     ],
     [
         'id' => 20,
         'type' => 'fill',
-        'q' => 'What is the following code output?
-        int myNum = 15;
-        printf("%d", myNum);',
+        'q' => 'What is the following code output? int myNum = 15; printf("%d", myNum);',
         'answer' => '15'
     ],
     // Add more questions here. They will be safe on the server.
