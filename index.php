@@ -495,12 +495,12 @@ switch ($action) {
 <body>
     <h1>🧠 Quiz</h1>
 
-    <div class="container" id="quiz-app">
-        <div id="welcomeScreen">
-            <p>Please enter your name to start the quiz:</p>
-            <input type="text" id="nameInput" placeholder="Enter your name" />
-            <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
-        </div>
+    <div class="container" id="quiz-app">
+        <div id="welcomeScreen">
+            <p>Please enter your **Student ID** to start the quiz:</p>
+            <input type="text" id="studentIdInput" placeholder="Enter your student ID" />
+            <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
+        </div>
         
         <div class="timer" id="timer">Time left: 60s</div>
         <div id="quiz">
