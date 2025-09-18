@@ -15,192 +15,192 @@ $questions = [
         ],
         'answer' => 'C. printf("Hi Programming 1");'
     ],
-    // [
-    //     'id' => 2,
-    //     'type' => 'fill',
-    //     'q' => 'How do you insert COMMENTS in C code?',
-    //     'answer' => '//'
-    // ],
-    // [
-    //     'id' => 3,
-    //     'type' => 'truefalse',
-    //     'q' => 'When a variable is created in C, a memory address is assigned to the variable.',
-    //     'answer' => 'True'
-    // ],
-    // [
-    //     'id' => 4,
-    //     'type' => 'truefalse',
-    //     'q' => 'In C, code statements must end with a semicolon (;)',
-    //     'answer' => 'True'
-    // ],
-    // [
-    //     'id' => 5,
-    //     'type' => 'multiple',
-    //     'q' => 'How can you create a variable with the numeric value 5?',
-    //     'choices' => [
-    //         "A. val num = 5;",
-    //         "B. num = 5 int;",
-    //         "C. num = 5;",
-    //         "D. int num = 5;"
-    //     ],
-    //     'answer' => 'D. int num = 5;'
-    // ],
-    // [
-    //     'id' => 6,
-    //     'type' => 'multiple',
-    //     'q' => 'How can you create a variable with the floating number 2.8?',
-    //     'choices' => [
-    //         "A. val num = 2.8;",
-    //         "B. float num = 2.8;",
-    //         "C. num = 2.8 double;",
-    //         "D. num = 2.8 float;"
-    //     ],
-    //     'answer' => 'B. float num = 2.8;'
-    // ],
-    // [
-    //     'id' => 7,
-    //     'type' => 'multiple',
-    //     'q' => 'Which operator is used to add together two values?',
-    //     'choices' => [
-    //         "A. The * sign",
-    //         "B. The ADD keyword",
-    //         "C. The & sign",
-    //         "D. The + sign"
-    //     ],
-    //     'answer' => 'D. The + sign'
-    // ],
-    // [
-    //     'id' => 8,
-    //     'type' => 'multiple',
-    //     'q' => 'Which function is often used to output values and display text?',
-    //     'choices' => [
-    //         "A. printf()",
-    //         "B. output()",
-    //         "C. printword()",
-    //         "D. write()"
-    //     ],
-    //     'answer' => 'A. printf()'
-    // ],
-    // [
-    //     'id' => 9,
-    //     'type' => 'multiple',
-    //     'q' => 'Which format specifier is often used to print integers?',
-    //     'choices' => [
-    //         "A. %s",
-    //         "B. %c",
-    //         "C. %d",
-    //         "D. %f"
-    //     ],
-    //     'answer' => 'C. %d'
-    // ],
-    // [
-    //     'id' => 10,
-    //     'type' => 'multiple',
-    //     'q' => 'Which operator can be used to compare two values?',
-    //     'choices' => [
-    //         "A. ==",
-    //         "B. <>",
-    //         "C. ><",
-    //         "D. ="
-    //     ],
-    //     'answer' => 'A. =='
-    // ],
-    // [
-    //     'id' => 11,
-    //     'type' => 'multiple',
-    //     'q' => 'Which operator can be used to find the memory size (in bytes) of a data type or variable?',
-    //     'choices' => [
-    //         "A. The length property",
-    //         "B. The sizeof property",
-    //         "C. The len property",
-    //         "D. The sizer property"
-    //     ],
-    //     'answer' => 'B. The sizeof property'
-    // ],
-    // [
-    //     'id' => 12,
-    //     'type' => 'multiple',
-    //     'q' => 'Which keyword can be used to make a variable unchangeable/read-only?',
-    //     'choices' => [
-    //         "A. const",
-    //         "B. final",
-    //         "C. constant",
-    //         "D. readonly"
-    //     ],
-    //     'answer' => 'A. const'
-    // ],
-    // [
-    //     'id' => 13,
-    //     'type' => 'multiple',
-    //     'q' => 'What do we call the following? int myNumbers[] = {25, 50, 75, 100};',
-    //     'choices' => [
-    //         "A. None of the above",
-    //         "B. A class",
-    //         "C. An array",
-    //         "D. A pointer"
-    //     ],
-    //     'answer' => 'C. An array'
-    // ],
-    // [
-    //     'id' => 14,
-    //     'type' => 'multiple',
-    //     'q' => 'Array indexes start with:',
-    //     'choices' => [
-    //         "A. 1",
-    //         "B. 0",
-    //         "C. -1",
-    //         "D. 10"
-    //     ],
-    //     'answer' => 'B. 0'
-    // ],
-    // [
-    //     'id' => 15,
-    //     'type' => 'fill',
-    //     'q' => 'Array indexes start with?',
-    //     'answer' => '0'
-    // ],
-    // [
-    //     'id' => 16,
-    //     'type' => 'multiple',
-    //     'q' => 'What does the \n character do in a C program?',
-    //     'choices' => [
-    //         "A. It creates a new line",
-    //         "B. It creates a space",
-    //         "C. It creates a tab",
-    //         "D. It creates a backslash"
-    //     ],
-    //     'answer' => 'A. It creates a new line'
-    // ],
-    // [
-    //     'id' => 17,
-    //     'type' => 'fill',
-    //     'q' => 'What is the code output? printf("Hello World! I am learning C.");',
-    //     'answer' => 'Hello World! I am learning C.'
-    // ],
-    // [
-    //     'id' => 18,
-    //     'type' => 'multiple',
-    //     'q' => 'Which data type is used to store integers (whole numbers) in C?',
-    //     'choices' => [
-    //         "A. char",
-    //         "B. float",
-    //         "C. int",
-    //         "D. double"
-    //     ],
-    //     'answer' => 'C. int'
-    // ],
-    // [
-    //     'id' => 19,
-    //     'type' => 'fill',
-    //     'q' => 'Use the correct format specifier to output the value of myNum: int myNum = 15; printf(" ", myNum);',
-    //     'answer' => '%d'
-    // ],
-    // [
-    //     'id' => 20,
-    //     'type' => 'fill',
-    //     'q' => 'What is the following code output? int myNum = 15; printf("%d", myNum);',
-    //     'answer' => '15'
-    // ],
+    [
+        'id' => 2,
+        'type' => 'fill',
+        'q' => 'How do you insert COMMENTS in C code?',
+        'answer' => '//'
+    ],
+    [
+        'id' => 3,
+        'type' => 'truefalse',
+        'q' => 'When a variable is created in C, a memory address is assigned to the variable.',
+        'answer' => 'True'
+    ],
+    [
+        'id' => 4,
+        'type' => 'truefalse',
+        'q' => 'In C, code statements must end with a semicolon (;)',
+        'answer' => 'True'
+    ],
+    [
+        'id' => 5,
+        'type' => 'multiple',
+        'q' => 'How can you create a variable with the numeric value 5?',
+        'choices' => [
+            "A. val num = 5;",
+            "B. num = 5 int;",
+            "C. num = 5;",
+            "D. int num = 5;"
+        ],
+        'answer' => 'D. int num = 5;'
+    ],
+    [
+        'id' => 6,
+        'type' => 'multiple',
+        'q' => 'How can you create a variable with the floating number 2.8?',
+        'choices' => [
+            "A. val num = 2.8;",
+            "B. float num = 2.8;",
+            "C. num = 2.8 double;",
+            "D. num = 2.8 float;"
+        ],
+        'answer' => 'B. float num = 2.8;'
+    ],
+    [
+        'id' => 7,
+        'type' => 'multiple',
+        'q' => 'Which operator is used to add together two values?',
+        'choices' => [
+            "A. The * sign",
+            "B. The ADD keyword",
+            "C. The & sign",
+            "D. The + sign"
+        ],
+        'answer' => 'D. The + sign'
+    ],
+    [
+        'id' => 8,
+        'type' => 'multiple',
+        'q' => 'Which function is often used to output values and display text?',
+        'choices' => [
+            "A. printf()",
+            "B. output()",
+            "C. printword()",
+            "D. write()"
+        ],
+        'answer' => 'A. printf()'
+    ],
+    [
+        'id' => 9,
+        'type' => 'multiple',
+        'q' => 'Which format specifier is often used to print integers?',
+        'choices' => [
+            "A. %s",
+            "B. %c",
+            "C. %d",
+            "D. %f"
+        ],
+        'answer' => 'C. %d'
+    ],
+    [
+        'id' => 10,
+        'type' => 'multiple',
+        'q' => 'Which operator can be used to compare two values?',
+        'choices' => [
+            "A. ==",
+            "B. <>",
+            "C. ><",
+            "D. ="
+        ],
+        'answer' => 'A. =='
+    ],
+    [
+        'id' => 11,
+        'type' => 'multiple',
+        'q' => 'Which operator can be used to find the memory size (in bytes) of a data type or variable?',
+        'choices' => [
+            "A. The length property",
+            "B. The sizeof property",
+            "C. The len property",
+            "D. The sizer property"
+        ],
+        'answer' => 'B. The sizeof property'
+    ],
+    [
+        'id' => 12,
+        'type' => 'multiple',
+        'q' => 'Which keyword can be used to make a variable unchangeable/read-only?',
+        'choices' => [
+            "A. const",
+            "B. final",
+            "C. constant",
+            "D. readonly"
+        ],
+        'answer' => 'A. const'
+    ],
+    [
+        'id' => 13,
+        'type' => 'multiple',
+        'q' => 'What do we call the following? int myNumbers[] = {25, 50, 75, 100};',
+        'choices' => [
+            "A. None of the above",
+            "B. A class",
+            "C. An array",
+            "D. A pointer"
+        ],
+        'answer' => 'C. An array'
+    ],
+    [
+        'id' => 14,
+        'type' => 'multiple',
+        'q' => 'Array indexes start with:',
+        'choices' => [
+            "A. 1",
+            "B. 0",
+            "C. -1",
+            "D. 10"
+        ],
+        'answer' => 'B. 0'
+    ],
+    [
+        'id' => 15,
+        'type' => 'fill',
+        'q' => 'Array indexes start with?',
+        'answer' => '0'
+    ],
+    [
+        'id' => 16,
+        'type' => 'multiple',
+        'q' => 'What does the \n character do in a C program?',
+        'choices' => [
+            "A. It creates a new line",
+            "B. It creates a space",
+            "C. It creates a tab",
+            "D. It creates a backslash"
+        ],
+        'answer' => 'A. It creates a new line'
+    ],
+    [
+        'id' => 17,
+        'type' => 'fill',
+        'q' => 'What is the code output? printf("Hello World! I am learning C.");',
+        'answer' => 'Hello World! I am learning C.'
+    ],
+    [
+        'id' => 18,
+        'type' => 'multiple',
+       
+        'choices' => [
+            "A. char",
+            "B. float",
+            "C. int",
+            "D. double"
+        ],
+        'answer' => 'C. int'
+    ],
+    [
+        'id' => 19,
+        'type' => 'fill',
+        'q' => 'Use the correct format specifier to output the value of myNum: int myNum = 15; printf(" ", myNum);',
+        'answer' => '%d'
+    ],
+    [
+        'id' => 20,
+        'type' => 'fill',
+        'q' => 'What is the following code output? int myNum = 15; printf("%d", myNum);',
+        'answer' => '15'
+    ],
     // Add more questions here. They will be safe on the server.
 ];
 
