@@ -3,18 +3,18 @@
 
 // The questions and answers are stored here, securely on the server.
 $questions = [
-    // [
-    //     'id' => 1,
-    //     'type' => 'multiple',
-    //     'q' => 'What is a correct syntax to output "Hi Programming 1" in C?',
-    //     'choices' => [
-    //         "A. cout << \"Hi Programming 1\";",
-    //         "B. System.out.printline(\"Hi Programming 1\");",
-    //         "C. printf(\"Hi Programming 1\");",
-    //         "D. Console.WriteLine(\"Hi Programming 1\");"
-    //     ],
-    //     'answer' => 'C. printf("Hi Programming 1");'
-    // ],
+    [
+        'id' => 1,
+        'type' => 'multiple',
+        'q' => 'What is a correct syntax to output "Hi Programming 1" in C?',
+        'choices' => [
+            "A. cout << \"Hi Programming 1\";",
+            "B. System.out.printline(\"Hi Programming 1\");",
+            "C. printf(\"Hi Programming 1\");",
+            "D. Console.WriteLine(\"Hi Programming 1\");"
+        ],
+        'answer' => 'C. printf("Hi Programming 1");'
+    ],
     // [
     //     'id' => 2,
     //     'type' => 'fill',
