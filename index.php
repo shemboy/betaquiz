@@ -341,6 +341,16 @@ switch ($action) {
         $name = $students[$id] ?? '';
         echo json_encode(['name' => $name]);
         exit;
+
+    case 'logTabLeave':
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? 'UnknownID';
+        $name = $data['name'] ?? 'Anonymous';
+        $date = date('Y-m-d H:i:s');
+        $log_line = "Date: $date | ID: $id | Name: $name | Event: Tab minimized or left\n";
+        file_put_contents('tab_leave_logs.txt', $log_line, FILE_APPEND | LOCK_EX);
+        echo json_encode(['status' => 'logged']);
+        exit;
     }
 }
 ?>
@@ -768,6 +778,16 @@ nameInput.addEventListener('keydown', function(e) {
 
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden') {
+        // Log tab leave/minimize event to server
+        fetch('?action=logTabLeave', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: idInput.value.trim(),
+                name: nameInput.value.trim()
+            })
+        });
+
         // Reset quiz state
         score = 0;
         currentIndex = 0;
