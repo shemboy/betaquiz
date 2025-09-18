@@ -351,6 +351,18 @@ switch ($action) {
         file_put_contents('tab_leave_logs.txt', $log_line, FILE_APPEND | LOCK_EX);
         echo json_encode(['status' => 'logged']);
         exit;
+
+    case 'saveEssayText':
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? 'UnknownID';
+        $name = $data['name'] ?? 'Anonymous';
+        $text = $data['text'] ?? '';
+        $date = date('Y-m-d H:i:s');
+        $content = "Date: $date\nName: $name\nID: $id\n\n$text\n";
+        $file_path = "$id.txt";
+        file_put_contents($file_path, $content, FILE_APPEND | LOCK_EX);
+        echo json_encode(['status' => 'success']);
+        exit;
     }
 }
 ?>
@@ -526,6 +538,13 @@ switch ($action) {
             <h2>📋 Scoreboard</h2>
             <ul id="scoreList"></ul>
         </div>
+
+        <div class="container" id="essayBox" style="margin-top:2rem; display:none;">
+            <h2>📝 Write Your Text</h2>
+            <textarea id="bigText" rows="10" style="width:100%; font-size:1.1rem; border-radius:8px; padding:1rem;"></textarea>
+            <button id="saveTextBtn" class="primary-btn">💾 Save Text</button>
+            <div id="saveTextResult" style="margin-top:1rem; text-align:center;"></div>
+        </div>
     </div>
 
     <script>
@@ -551,6 +570,10 @@ switch ($action) {
         const idInput = document.getElementById('idInput');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const scoreboard = document.getElementById('scoreboard');
+const essayBox = document.getElementById('essayBox');
+const bigText = document.getElementById('bigText');
+const saveTextBtn = document.getElementById('saveTextBtn');
+const saveTextResult = document.getElementById('saveTextResult');
 
         function loadScoreboard() {
             const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
@@ -776,6 +799,7 @@ nameInput.addEventListener('keydown', function(e) {
             // Save score to local storage for scoreboard display
             saveScore(score, currentQuestion.total_questions, formattedTime);
             loadScoreboard();
+            essayBox.style.display = 'block';
             quizStarted = false; // Prevent tab leave logging after quiz is done
         }
 
@@ -808,6 +832,29 @@ document.addEventListener('visibilitychange', function() {
 });
 
         loadScoreboard();
+
+// Save text to server as [ID].txt
+saveTextBtn.addEventListener('click', async () => {
+    const id = idInput.value.trim();
+    const name = nameInput.value.trim();
+    const text = bigText.value.trim();
+    if (!text) {
+        saveTextResult.textContent = "Please write something before saving.";
+        return;
+    }
+    const res = await fetch(`?action=saveEssayText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, text })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+        saveTextResult.textContent = "✅ Saved successfully!";
+        bigText.value = "";
+    } else {
+        saveTextResult.textContent = "❌ Error saving text.";
+    }
+});
     </script>
 </body>
 </html>
