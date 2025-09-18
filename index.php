@@ -209,13 +209,6 @@ $questions = [
     // Add more questions here. They will be safe on the server.
 ];
 
-$students = [
-    '2024001' => 'John Doe',
-    '2024002' => 'Jane Smith',
-    '2024003' => 'Peter Jones',
-    // Add more student IDs and names here
-];
-
 // Start a session to keep track of answered questions.
 session_start();
 header('Content-Type: text/html');
@@ -288,8 +281,8 @@ switch ($action) {
         exit;
 
     case 'saveResult':
+        // This is the action to save the quiz summary results
         $data = json_decode(file_get_contents('php://input'), true);
-        $id = $data['id'] ?? 'UnknownID';
         $name = $data['name'] ?? 'Anonymous';
         $score = $data['score'] ?? 0;
         $total = $data['total'] ?? 0;
@@ -297,7 +290,7 @@ switch ($action) {
         $date = date('Y-m-d H:i:s');
 
         // Format the result string for the summary log
-        $result_line = "Date: $date | ID: $id | Name: $name | Score: $score/$total | Time: $time\n";
+        $result_line = "Date: $date | Name: $name | Score: $score/$total | Time: $time\n";
 
         // Save the result to a file (quiz_results.txt)
         $file_path = 'quiz_results.txt';
@@ -307,8 +300,8 @@ switch ($action) {
         exit;
 
     case 'saveStudentLog':
+        // This is the new action to save the detailed student log
         $data = json_decode(file_get_contents('php://input'), true);
-        $id = $data['id'] ?? 'UnknownID';
         $name = $data['name'] ?? 'Anonymous';
         $date = date('Y-m-d H:i:s');
         $incorrectAnswers = $data['incorrectAnswers'] ?? [];
@@ -319,7 +312,7 @@ switch ($action) {
 
         if ($log_handle) {
             // Write the header for the log entry
-            fwrite($log_handle, "--- Student Log for ID: $id, Name: $name on $date ---\n");
+            fwrite($log_handle, "--- Student Log for $name on $date ---\n");
             
             // Log each incorrect answer
             if (count($incorrectAnswers) > 0) {
@@ -338,12 +331,6 @@ switch ($action) {
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Could not open log file.']);
         }
-        exit;
-
-    case 'getStudentName':
-        $id = $_GET['id'] ?? '';
-        $name = $students[$id] ?? '';
-        echo json_encode(['name' => $name]);
         exit;
     }
 }
@@ -503,11 +490,10 @@ switch ($action) {
 
     <div class="container" id="quiz-app">
         <div id="welcomeScreen">
-            <p>Please enter your Student ID number to start the quiz:</p>
-            <input type="text" id="idInput" placeholder="Enter your Student ID" />
-            <input type="text" id="nameInput" placeholder="Name will appear here" readonly style="display:none;" />
-            <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
-        </div>
+            <p>Please enter your name to start the quiz:</p>
+            <input type="text" id="nameInput" placeholder="Enter your name" />
+            <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
+        </div>
         
         <div class="timer" id="timer">Time left: 60s</div>
         <div id="quiz">
@@ -527,53 +513,22 @@ switch ($action) {
         let score = 0;
         let timeLeft = 60;
         let timerInterval;
-        let studentId = "";
-    let studentName = "";
+        let studentName = "";
+        let quizStartTime;
+        let currentQuestion = null;
+        // New array to store incorrect answers
+        let incorrectAnswersLog = []; 
 
-const idInput = document.getElementById('idInput');
-const nameInput = document.getElementById('nameInput');
-const startBtn = document.getElementById('startBtn');
-const welcomeScreen = document.getElementById('welcomeScreen');
-
-idInput.addEventListener('blur', async () => {
-    const id = idInput.value.trim();
-    if (id !== "") {
-        const res = await fetch(`?action=getStudentName&id=${encodeURIComponent(id)}`);
-        const data = await res.json();
-        if (data.name) {
-            nameInput.value = data.name;
-            nameInput.style.display = 'block';
-        } else {
-            nameInput.value = "ID not found!";
-            nameInput.style.display = 'block';
-        }
-    } else {
-        nameInput.style.display = 'none';
-    }
-});
-
-startBtn.addEventListener('click', () => {
-    const id = idInput.value.trim();
-    const name = nameInput.value.trim();
-    if (id === "") {
-        alert("Please enter your Student ID number.");
-        return;
-    }
-    if (name === "" || name === "ID not found!") {
-        alert("Please enter a valid Student ID.");
-        return;
-    }
-    studentId = id;
-    studentName = name;
-    welcomeScreen.style.display = 'none';
-    quizEl.style.display = 'block';
-    tEl.style.display = 'block';
-    currentIndex = 0;
-    score = 0;
-    incorrectAnswersLog = [];
-    quizStartTime = new Date();
-    fetch('?action=start').then(() => getNextQuestion());
-});
+        const startBtn = document.getElementById('startBtn');
+        const qEl = document.getElementById('question');
+        const cEl = document.getElementById('choices');
+        const rEl = document.getElementById('result');
+        const tEl = document.getElementById('timer');
+        const quizEl = document.getElementById('quiz');
+        const scoreList = document.getElementById('scoreList');
+        const nameInput = document.getElementById('nameInput');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const scoreboard = document.getElementById('scoreboard');
 
         function loadScoreboard() {
             const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
@@ -710,9 +665,10 @@ startBtn.addEventListener('click', () => {
             // Send the main quiz results to quiz_results.txt
             fetch('?action=saveResult', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
-                    id: studentId,
                     name: studentName,
                     score: score,
                     total: currentQuestion.total_questions,
@@ -730,9 +686,10 @@ startBtn.addEventListener('click', () => {
             // Send the detailed log of incorrect answers to studentlogs.txt
             fetch('?action=saveStudentLog', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
-                    id: studentId,
                     name: studentName,
                     incorrectAnswers: incorrectAnswersLog
                 })
