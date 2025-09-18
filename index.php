@@ -101,6 +101,16 @@ if (isset($_GET['action'])) {
             border-color: #3498db;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
+        textarea {
+            width: 100%;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 180px;
+            padding: 1rem;
+            border: 2px solid #ddd;
+        }
         .primary-btn {
             background: #3498db;
             color: white;
@@ -137,7 +147,7 @@ if (isset($_GET['action'])) {
     </div>
     <div class="container" id="essayBox" style="margin-top:2rem; display:none;">
         <h2>📝 Write Your Text</h2>
-        <textarea id="bigText" rows="10" style="width:100%; font-size:1.1rem; border-radius:8px; padding:1rem;"></textarea>
+        <textarea id="bigText" rows="10"></textarea>
         <button id="saveTextBtn" class="primary-btn">💾 Save Text</button>
         <div id="saveTextResult" style="margin-top:1rem; text-align:center;"></div>
     </div>
@@ -233,4 +243,3 @@ if (isset($_GET['action'])) {
     </script>
 </body>
 </html>
-
