@@ -538,6 +538,7 @@ switch ($action) {
         let currentQuestion = null;
         // New array to store incorrect answers
         let incorrectAnswersLog = []; 
+        let quizStarted = false; // Add this flag
 
         const startBtn = document.getElementById('startBtn');
         const qEl = document.getElementById('question');
@@ -617,6 +618,7 @@ nameInput.addEventListener('keydown', function(e) {
             incorrectAnswersLog = [];
             quizStartTime = new Date();
             fetch('?action=start').then(() => getNextQuestion());
+            quizStarted = true; // Set flag when quiz starts
         });
 
         async function getNextQuestion() {
@@ -778,27 +780,29 @@ nameInput.addEventListener('keydown', function(e) {
 
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden') {
-        // Log tab leave/minimize event to server
-        fetch('?action=logTabLeave', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: idInput.value.trim(),
-                name: nameInput.value.trim()
-            })
-        });
+        if (quizStarted) { // Only log if quiz has started
+            fetch('?action=logTabLeave', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: idInput.value.trim(),
+                    name: nameInput.value.trim()
+                })
+            });
 
-        // Reset quiz state
-        score = 0;
-        currentIndex = 0;
-        incorrectAnswersLog = [];
-        quizEl.style.display = 'none';
-        tEl.style.display = 'none';
-        welcomeScreen.style.display = 'block';
-        rEl.textContent = '';
-        qEl.textContent = '';
-        cEl.innerHTML = '';
-        alert("Quiz stopped because you switched tabs or minimized the browser. Please start again.");
+            // Reset quiz state
+            score = 0;
+            currentIndex = 0;
+            incorrectAnswersLog = [];
+            quizEl.style.display = 'none';
+            tEl.style.display = 'none';
+            welcomeScreen.style.display = 'block';
+            rEl.textContent = '';
+            qEl.textContent = '';
+            cEl.innerHTML = '';
+            alert("Quiz stopped because you switched tabs or minimized the browser. Please start again.");
+            quizStarted = false; // Reset flag
+        }
     }
 });
 
