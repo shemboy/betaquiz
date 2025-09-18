@@ -138,7 +138,7 @@ if (isset($_GET['action'])) {
     </style>
 </head>
 <body>
-    <h1>📝 Student Essay Box</h1>
+    <h1>📝 Student Write Box</h1>
     <div class="container" id="loginBox">
         <p>Please enter your Student ID number:</p>
         <input type="text" id="idInput" placeholder="Enter your Student ID" />
@@ -146,7 +146,7 @@ if (isset($_GET['action'])) {
         <button id="loginBtn" class="primary-btn">🔓 Login</button>
     </div>
     <div class="container" id="essayBox" style="margin-top:2rem; display:none;">
-        <h2>📝 Write Your Text</h2>
+        <h2>📝 Write here</h2>
         <textarea id="bigText" rows="10"></textarea>
         <button id="saveTextBtn" class="primary-btn">💾 Save Text</button>
         <div id="saveTextResult" style="margin-top:1rem; text-align:center;"></div>
