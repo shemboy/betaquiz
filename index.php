@@ -209,6 +209,20 @@ $questions = [
     // Add more questions here. They will be safe on the server.
 ];
 
+
+
+$students = [
+    '2024001' => 'John Doe',
+    '2024002' => 'Jane Smith',
+    '2024003' => 'Peter Jones',
+    // Add more student IDs and names here
+];
+
+
+
+
+
+
 // 🆕 New: Define the list of valid student IDs and their names
 $students = [
     '2024001' => 'John Doe',
@@ -758,3 +772,4 @@ if (isset($_GET['action'])) {
     </script>
 </body>
 </html>
+
