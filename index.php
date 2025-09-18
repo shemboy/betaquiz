@@ -766,6 +766,22 @@ nameInput.addEventListener('keydown', function(e) {
             loadScoreboard();
         }
 
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+        // Reset quiz state
+        score = 0;
+        currentIndex = 0;
+        incorrectAnswersLog = [];
+        quizEl.style.display = 'none';
+        tEl.style.display = 'none';
+        welcomeScreen.style.display = 'block';
+        rEl.textContent = '';
+        qEl.textContent = '';
+        cEl.innerHTML = '';
+        alert("Quiz stopped because you switched tabs or minimized the browser. Please start again.");
+    }
+});
+
         loadScoreboard();
     </script>
 </body>
