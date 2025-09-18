@@ -209,6 +209,13 @@ $questions = [
     // Add more questions here. They will be safe on the server.
 ];
 
+$students = [
+    '2024001' => 'John Doe',
+    '2024002' => 'Jane Smith',
+    '2024003' => 'Peter Jones',
+    // Add more student IDs and names here
+];
+
 // Start a session to keep track of answered questions.
 session_start();
 header('Content-Type: text/html');
@@ -331,6 +338,12 @@ switch ($action) {
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Could not open log file.']);
         }
+        exit;
+
+    case 'getStudentName':
+        $id = $_GET['id'] ?? '';
+        $name = $students[$id] ?? '';
+        echo json_encode(['name' => $name]);
         exit;
     }
 }
@@ -492,7 +505,7 @@ switch ($action) {
         <div id="welcomeScreen">
             <p>Please enter your Student ID number to start the quiz:</p>
             <input type="text" id="idInput" placeholder="Enter your Student ID" />
-            <input type="text" id="nameInput" placeholder="Enter your Name" style="display:none;" />
+            <input type="text" id="nameInput" placeholder="Name will appear here" readonly style="display:none;" />
             <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
         </div>
         
@@ -515,16 +528,27 @@ switch ($action) {
         let timeLeft = 60;
         let timerInterval;
         let studentId = "";
-let studentName = "";
+    let studentName = "";
 
 const idInput = document.getElementById('idInput');
 const nameInput = document.getElementById('nameInput');
 const startBtn = document.getElementById('startBtn');
 const welcomeScreen = document.getElementById('welcomeScreen');
 
-idInput.addEventListener('blur', () => {
-    if (idInput.value.trim() !== "") {
-        nameInput.style.display = 'block';
+idInput.addEventListener('blur', async () => {
+    const id = idInput.value.trim();
+    if (id !== "") {
+        const res = await fetch(`?action=getStudentName&id=${encodeURIComponent(id)}`);
+        const data = await res.json();
+        if (data.name) {
+            nameInput.value = data.name;
+            nameInput.style.display = 'block';
+        } else {
+            nameInput.value = "ID not found!";
+            nameInput.style.display = 'block';
+        }
+    } else {
+        nameInput.style.display = 'none';
     }
 });
 
@@ -535,8 +559,8 @@ startBtn.addEventListener('click', () => {
         alert("Please enter your Student ID number.");
         return;
     }
-    if (name === "") {
-        alert("Please enter your name.");
+    if (name === "" || name === "ID not found!") {
+        alert("Please enter a valid Student ID.");
         return;
     }
     studentId = id;
