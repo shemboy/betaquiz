@@ -209,6 +209,14 @@ $questions = [
     // Add more questions here. They will be safe on the server.
 ];
 
+// 🆕 New: Define the list of valid student IDs and their names
+$students = [
+    '2024001' => 'John Doe',
+    '2024002' => 'Jane Smith',
+    '2024003' => 'Peter Jones',
+    // Add more student IDs and names here
+];
+
 // Start a session to keep track of answered questions.
 session_start();
 header('Content-Type: text/html');
@@ -221,117 +229,141 @@ if (isset($_GET['action'])) {
     $answered_count = $_SESSION['answered_count'] ?? 0;
     $total_questions = count($questions);
 
-switch ($action) {
-    case 'start':
-        $_SESSION['answered_count'] = 0;
-        $_SESSION['shuffled_questions'] = $questions;
-        shuffle($_SESSION['shuffled_questions']);
-        echo json_encode(['status' => 'ok']);
-        exit;
-
-    case 'getQuestion':
-        if ($answered_count >= $total_questions) {
-            echo json_encode(['finished' => true, 'total_questions' => $total_questions]);
-            session_destroy();
+    switch ($action) {
+        case 'login':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $studentId = $data['studentId'] ?? '';
+            
+            // 🆕 New: Check if the submitted ID exists in the students array
+            if (array_key_exists($studentId, $students)) {
+                $_SESSION['studentId'] = $studentId;
+                $_SESSION['studentName'] = $students[$studentId];
+                echo json_encode(['status' => 'success', 'name' => $_SESSION['studentName']]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid Student ID.']);
+            }
             exit;
-        }
-
-        $current = $_SESSION['shuffled_questions'][$answered_count];
-        $question_data = [
-            'id' => $current['id'],
-            'type' => $current['type'],
-            'q' => $current['q'],
-            'choices' => $current['choices'] ?? [],
-            'total_questions' => $total_questions
-        ];
-        echo json_encode($question_data);
-        exit;
-
-    case 'submitAnswer':
-        $data = json_decode(file_get_contents('php://input'), true);
-        $user_answer = $data['user_answer'];
-        $question_id = $data['question_id'];
-        
-        $question = null;
-        foreach ($questions as $q) {
-            if ($q['id'] == $question_id) {
-                $question = $q;
-                break;
-            }
-        }
-
-        if ($question) {
-            $correct = false;
-            if ($question['type'] === 'fill') {
-                $correct = (strtolower($question['answer']) === strtolower($user_answer));
-            } elseif ($question['type'] === 'truefalse') {
-                $correct = (strtolower($question['answer']) === strtolower($user_answer));
-            } else {
-                $correct = ($question['answer'] === $user_answer);
-            }
             
-            $_SESSION['answered_count'] = $answered_count + 1;
-            echo json_encode([
-                'correct' => $correct,
-                'correct_answer' => $question['answer']
-            ]);
-        } else {
-            echo json_encode(['error' => 'Question not found.']);
-        }
-        exit;
+        case 'start':
+            // 🆕 Updated: Check if a student is logged in before starting
+            if (!isset($_SESSION['studentId'])) {
+                echo json_encode(['status' => 'error', 'message' => 'Not logged in.']);
+                exit;
+            }
+            $_SESSION['answered_count'] = 0;
+            $_SESSION['shuffled_questions'] = $questions;
+            shuffle($_SESSION['shuffled_questions']);
+            echo json_encode(['status' => 'ok']);
+            exit;
 
-    case 'saveResult':
-        // This is the action to save the quiz summary results
-        $data = json_decode(file_get_contents('php://input'), true);
-        $name = $data['name'] ?? 'Anonymous';
-        $score = $data['score'] ?? 0;
-        $total = $data['total'] ?? 0;
-        $time = $data['time'] ?? 'N/A';
-        $date = date('Y-m-d H:i:s');
+        case 'getQuestion':
+            if ($answered_count >= $total_questions) {
+                echo json_encode(['finished' => true, 'total_questions' => $total_questions]);
+                session_destroy();
+                exit;
+            }
 
-        // Format the result string for the summary log
-        $result_line = "Date: $date | Name: $name | Score: $score/$total | Time: $time\n";
+            $current = $_SESSION['shuffled_questions'][$answered_count];
+            $question_data = [
+                'id' => $current['id'],
+                'type' => $current['type'],
+                'q' => $current['q'],
+                'choices' => $current['choices'] ?? [],
+                'total_questions' => $total_questions
+            ];
+            echo json_encode($question_data);
+            exit;
 
-        // Save the result to a file (quiz_results.txt)
-        $file_path = 'quiz_results.txt';
-        file_put_contents($file_path, $result_line, FILE_APPEND | LOCK_EX);
-
-        echo json_encode(['status' => 'success', 'message' => 'Summary result saved successfully.']);
-        exit;
-
-    case 'saveStudentLog':
-        // This is the new action to save the detailed student log
-        $data = json_decode(file_get_contents('php://input'), true);
-        $name = $data['name'] ?? 'Anonymous';
-        $date = date('Y-m-d H:i:s');
-        $incorrectAnswers = $data['incorrectAnswers'] ?? [];
-
-        // Open the studentlogs.txt file for appending
-        $log_file_path = 'studentlogs.txt';
-        $log_handle = fopen($log_file_path, 'a');
-
-        if ($log_handle) {
-            // Write the header for the log entry
-            fwrite($log_handle, "--- Student Log for $name on $date ---\n");
+        case 'submitAnswer':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $user_answer = $data['user_answer'];
+            $question_id = $data['question_id'];
             
-            // Log each incorrect answer
-            if (count($incorrectAnswers) > 0) {
-                foreach ($incorrectAnswers as $q) {
-                    $log_line = "Question ID: {$q['id']} | Question: {$q['q']} | Your Answer: {$q['userAnswer']} | Correct Answer: {$q['correctAnswer']}\n";
-                    fwrite($log_handle, $log_line);
+            $question = null;
+            foreach ($questions as $q) {
+                if ($q['id'] == $question_id) {
+                    $question = $q;
+                    break;
                 }
-            } else {
-                fwrite($log_handle, "Student answered all questions correctly.\n");
             }
-            
-            fwrite($log_handle, "\n"); // Add a blank line for readability
-            fclose($log_handle);
 
-            echo json_encode(['status' => 'success', 'message' => 'Detailed log saved successfully.']);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Could not open log file.']);
-        }
-        exit;
+            if ($question) {
+                $correct = false;
+                if ($question['type'] === 'fill') {
+                    $correct = (strtolower($question['answer']) === strtolower($user_answer));
+                } elseif ($question['type'] === 'truefalse') {
+                    $correct = (strtolower($question['answer']) === strtolower($user_answer));
+                } else {
+                    $correct = ($question['answer'] === $user_answer);
+                }
+                
+                $_SESSION['answered_count'] = $answered_count + 1;
+                echo json_encode([
+                    'correct' => $correct,
+                    'correct_answer' => $question['answer']
+                ]);
+            } else {
+                echo json_encode(['error' => 'Question not found.']);
+            }
+            exit;
+
+        case 'saveResult':
+            // This is the action to save the quiz summary results
+            $data = json_decode(file_get_contents('php://input'), true);
+            // 🆕 Updated: Get name from session instead of post data
+            $studentId = $_SESSION['studentId'] ?? 'N/A';
+            $name = $_SESSION['studentName'] ?? 'Anonymous';
+            $score = $data['score'] ?? 0;
+            $total = $data['total'] ?? 0;
+            $time = $data['time'] ?? 'N/A';
+            $date = date('Y-m-d H:i:s');
+
+            // Format the result string for the summary log
+            $result_line = "Date: $date | Student ID: $studentId | Name: $name | Score: $score/$total | Time: $time\n";
+
+            // Save the result to a file (quiz_results.txt)
+            $file_path = 'quiz_results.txt';
+            file_put_contents($file_path, $result_line, FILE_APPEND | LOCK_EX);
+
+            echo json_encode(['status' => 'success', 'message' => 'Summary result saved successfully.']);
+            exit;
+
+        case 'saveStudentLog':
+            // This is the new action to save the detailed student log
+            $data = json_decode(file_get_contents('php://input'), true);
+            // 🆕 Updated: Get name and ID from session
+            $studentId = $_SESSION['studentId'] ?? 'N/A';
+            $name = $_SESSION['studentName'] ?? 'Anonymous';
+            $date = date('Y-m-d H:i:s');
+            $incorrectAnswers = $data['incorrectAnswers'] ?? [];
+
+            // Open the studentlog.txt file for appending
+            $log_file_path = 'studentlog.txt';
+            $log_handle = fopen($log_file_path, 'a');
+
+            if ($log_handle) {
+                // Write the header for the log entry
+                // 🆕 Updated: Log student ID and name
+                fwrite($log_handle, "--- Student Log for Student ID: $studentId ($name) on $date ---\n");
+                
+                // Log each incorrect answer
+                if (count($incorrectAnswers) > 0) {
+                    foreach ($incorrectAnswers as $q) {
+                        $log_line = "Question ID: {$q['id']} | Question: {$q['q']} | Your Answer: {$q['userAnswer']} | Correct Answer: {$q['correctAnswer']}\n";
+                        fwrite($log_handle, $log_line);
+                    }
+                } else {
+                    fwrite($log_handle, "Student answered all questions correctly.\n");
+                }
+                
+                fwrite($log_handle, "\n"); // Add a blank line for readability
+                fclose($log_handle);
+
+                echo json_encode(['status' => 'success', 'message' => 'Detailed log saved successfully.']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Could not open log file.']);
+            }
+            exit;
     }
 }
 ?>
@@ -486,228 +518,243 @@ switch ($action) {
     </style>
 </head>
 <body>
-    <h1>🧠 Quiz</h1>
+    <h1>🧠 Quiz</h1>
 
-    <div class="container" id="quiz-app">
-        <div id="welcomeScreen">
-            <p>Please enter your name to start the quiz:</p>
-            <input type="text" id="nameInput" placeholder="Enter your name" />
-            <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
-        </div>
-        
-        <div class="timer" id="timer">Time left: 60s</div>
-        <div id="quiz">
-            <p id="question"></p>
-            <div id="choices"></div>
-            <div id="result" class="result"></div>
-        </div>
-        
-        <div class="scoreboard" id="scoreboard">
-            <h2>📋 Scoreboard</h2>
-            <ul id="scoreList"></ul>
-        </div>
-    </div>
+    <div class="container" id="quiz-app">
+        <div id="welcomeScreen">
+            <p>Please enter your **Student ID** to start the quiz:</p>
+            <input type="text" id="studentIdInput" placeholder="Enter your student ID" />
+            <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
+        </div>
+        
+        <div class="timer" id="timer">Time left: 60s</div>
+        <div id="quiz">
+            <p id="question"></p>
+            <div id="choices"></div>
+            <div id="result" class="result"></div>
+        </div>
+        
+        <div class="scoreboard" id="scoreboard">
+            <h2>📋 Scoreboard</h2>
+            <ul id="scoreList"></ul>
+        </div>
+    </div>
 
-    <script>
-        let currentIndex = 0;
-        let score = 0;
-        let timeLeft = 60;
-        let timerInterval;
-        let studentName = "";
-        let quizStartTime;
-        let currentQuestion = null;
-        // New array to store incorrect answers
-        let incorrectAnswersLog = []; 
+    <script>
+        let currentIndex = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let studentId = ""; // 🆕 New variable for student ID
+        let studentName = ""; // 🆕 New variable for student name
+        let quizStartTime;
+        let currentQuestion = null;
+        let incorrectAnswersLog = []; 
 
-        const startBtn = document.getElementById('startBtn');
-        const qEl = document.getElementById('question');
-        const cEl = document.getElementById('choices');
-        const rEl = document.getElementById('result');
-        const tEl = document.getElementById('timer');
-        const quizEl = document.getElementById('quiz');
-        const scoreList = document.getElementById('scoreList');
-        const nameInput = document.getElementById('nameInput');
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        const scoreboard = document.getElementById('scoreboard');
+        const startBtn = document.getElementById('startBtn');
+        const qEl = document.getElementById('question');
+        const cEl = document.getElementById('choices');
+        const rEl = document.getElementById('result');
+        const tEl = document.getElementById('timer');
+        const quizEl = document.getElementById('quiz');
+        const scoreList = document.getElementById('scoreList');
+        // 🆕 Updated: Change nameInput to studentIdInput
+        const studentIdInput = document.getElementById('studentIdInput');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const scoreboard = document.getElementById('scoreboard');
 
-        function loadScoreboard() {
-            const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
-            scoreList.innerHTML = scores.map(s => `<li>${s.name} on ${s.date} — ${s.score}/${s.total} - Time: ${s.time}</li>`).join('');
-        }
+        function loadScoreboard() {
+            const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
+            scoreList.innerHTML = scores.map(s => `<li>${s.name} on ${s.date} — ${s.score}/${s.total} - Time: ${s.time}</li>`).join('');
+        }
 
-        // This is now for local storage only, and no longer sends to the server.
-        function saveScore(score, total, time) {
-            const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
-            const now = new Date().toLocaleString();
-            scores.unshift({ date: now, name: studentName, score, total, time });
-            localStorage.setItem('quizScores', JSON.stringify(scores.slice(0, 10)));
-        }
+        // This is now for local storage only, and no longer sends to the server.
+        function saveScore(score, total, time) {
+            const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
+            const now = new Date().toLocaleString();
+            scores.unshift({ date: now, name: studentName, score, total, time });
+            localStorage.setItem('quizScores', JSON.stringify(scores.slice(0, 10)));
+        }
 
-        startBtn.addEventListener('click', () => {
-            const name = nameInput.value.trim();
-            if (name === "") {
-                alert("Please enter your name to start.");
-                return;
-            }
-            studentName = name;
-            welcomeScreen.style.display = 'none';
-            quizEl.style.display = 'block';
-            tEl.style.display = 'block';
-            currentIndex = 0;
-            score = 0;
-            incorrectAnswersLog = []; // Reset the log
-            quizStartTime = new Date();
-            fetch('?action=start').then(() => getNextQuestion());
-        });
+        startBtn.addEventListener('click', async () => { // 🆕 Updated: Made function async to use await
+            const id = studentIdInput.value.trim();
+            if (id === "") {
+                alert("Please enter your student ID to start.");
+                return;
+            }
+            
+            // 🆕 New: Authenticate with the server using the student ID
+            const response = await fetch('?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: id })
+            });
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                studentId = id;
+                studentName = data.name; // 🆕 Set the student name from the server's response
+                
+                welcomeScreen.style.display = 'none';
+                quizEl.style.display = 'block';
+                tEl.style.display = 'block';
+                currentIndex = 0;
+                score = 0;
+                incorrectAnswersLog = [];
+                quizStartTime = new Date();
+                
+                fetch('?action=start').then(() => getNextQuestion());
+            } else {
+                alert(data.message); // Show error message from the server
+            }
+        });
 
-        async function getNextQuestion() {
-            const response = await fetch('?action=getQuestion');
-            const data = await response.json();
+        async function getNextQuestion() {
+            const response = await fetch('?action=getQuestion');
+            const data = await response.json();
 
-            if (data.finished) {
-                endQuiz();
-                return;
-            }
+            if (data.finished) {
+                endQuiz();
+                return;
+            }
 
-            currentQuestion = data;
-            showQuestion();
-        }
+            currentQuestion = data;
+            showQuestion();
+        }
 
-        async function submitAnswer(answer) {
-            clearInterval(timerInterval);
-            
-            const response = await fetch('?action=submitAnswer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question_id: currentQuestion.id, user_answer: answer })
-            });
-            const data = await response.json();
+        async function submitAnswer(answer) {
+            clearInterval(timerInterval);
+            
+            const response = await fetch('?action=submitAnswer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question_id: currentQuestion.id, user_answer: answer })
+            });
+            const data = await response.json();
 
-            if (data.correct) {
-                score++;
-                rEl.textContent = "✅ Correct!";
-            } else {
-                // Log the incorrect answer
-                incorrectAnswersLog.push({
-                    id: currentQuestion.id,
-                    q: currentQuestion.q,
-                    userAnswer: answer,
-                    correctAnswer: data.correct_answer
-                });
-                rEl.textContent = `❌ Incorrect. Correct: ${data.correct_answer}`;
-            }
-            
-            setTimeout(getNextQuestion, 1000);
-        }
-        
-        function showQuestion() {
-            timeLeft = 60;
-            tEl.textContent = `Time left: ${timeLeft}s`;
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                tEl.textContent = `Time left: ${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    rEl.textContent = "⏱️ Time's up!";
-                    setTimeout(getNextQuestion, 1000);
-                }
-            }, 1000);
+            if (data.correct) {
+                score++;
+                rEl.textContent = "✅ Correct!";
+            } else {
+                // Log the incorrect answer
+                incorrectAnswersLog.push({
+                    id: currentQuestion.id,
+                    q: currentQuestion.q,
+                    userAnswer: answer,
+                    correctAnswer: data.correct_answer
+                });
+                rEl.textContent = `❌ Incorrect. Correct: ${data.correct_answer}`;
+            }
+            
+            setTimeout(getNextQuestion, 1000);
+        }
+        
+        function showQuestion() {
+            timeLeft = 60;
+            tEl.textContent = `Time left: ${timeLeft}s`;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                tEl.textContent = `Time left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    rEl.textContent = "⏱️ Time's up!";
+                    setTimeout(getNextQuestion, 1000);
+                }
+            }, 1000);
 
-            qEl.textContent = currentQuestion.q;
-            cEl.innerHTML = "";
-            rEl.textContent = "";
+            qEl.textContent = currentQuestion.q;
+            cEl.innerHTML = "";
+            rEl.textContent = "";
 
-            if (currentQuestion.type === "multiple") {
-                currentQuestion.choices.forEach((choice) => {
-                    const btn = document.createElement('button');
-                    btn.className = "answer-btn";
-                    btn.textContent = choice;
-                    btn.onclick = () => submitAnswer(choice);
-                    cEl.appendChild(btn);
-                });
-            } else if (currentQuestion.type === "truefalse") {
-                ["True", "False"].forEach((val) => {
-                    const btn = document.createElement('button');
-                    btn.className = "answer-btn";
-                    btn.textContent = val;
-                    btn.onclick = () => submitAnswer(val);
-                    cEl.appendChild(btn);
-                });
-            } else if (currentQuestion.type === "fill") {
-                const input = document.createElement('input');
-                input.type = "text";
-                input.placeholder = "Type your answer...";
-                cEl.appendChild(input);
+            if (currentQuestion.type === "multiple") {
+                currentQuestion.choices.forEach((choice) => {
+                    const btn = document.createElement('button');
+                    btn.className = "answer-btn";
+                    btn.textContent = choice;
+                    btn.onclick = () => submitAnswer(choice);
+                    cEl.appendChild(btn);
+                });
+            } else if (currentQuestion.type === "truefalse") {
+                ["True", "False"].forEach((val) => {
+                    const btn = document.createElement('button');
+                    btn.className = "answer-btn";
+                    btn.textContent = val;
+                    btn.onclick = () => submitAnswer(val);
+                    cEl.appendChild(btn);
+                });
+            } else if (currentQuestion.type === "fill") {
+                const input = document.createElement('input');
+                input.type = "text";
+                input.placeholder = "Type your answer...";
+                cEl.appendChild(input);
 
-                const submitBtn = document.createElement('button');
-                submitBtn.className = "primary-btn";
-                submitBtn.textContent = "Submit";
-                submitBtn.onclick = () => submitAnswer(input.value.trim());
-                cEl.appendChild(submitBtn);
-            }
-        }
+                const submitBtn = document.createElement('button');
+                submitBtn.className = "primary-btn";
+                submitBtn.textContent = "Submit";
+                submitBtn.onclick = () => submitAnswer(input.value.trim());
+                cEl.appendChild(submitBtn);
+            }
+        }
 
-        function endQuiz() {
-            clearInterval(timerInterval);
-            const quizEndTime = new Date();
-            const totalTimeInMs = quizEndTime - quizStartTime;
-            const totalSeconds = Math.floor(totalTimeInMs / 1000);
-            const minutes = Math.floor(totalSeconds / 60);
-            const seconds = totalSeconds % 60;
-            const formattedTime = `${minutes}m ${seconds}s`;
+        function endQuiz() {
+            clearInterval(timerInterval);
+            const quizEndTime = new Date();
+            const totalTimeInMs = quizEndTime - quizStartTime;
+            const totalSeconds = Math.floor(totalTimeInMs / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const formattedTime = `${minutes}m ${seconds}s`;
 
-            qEl.textContent = "🎉 Quiz Complete!";
-            cEl.innerHTML = "";
-            rEl.innerHTML = `Your score: ${score} / ${currentQuestion.total_questions}<br>Total time: ${formattedTime}`;
-            tEl.style.display = 'none';
-            
-            // Send the main quiz results to quiz_results.txt
-            fetch('?action=saveResult', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: studentName,
-                    score: score,
-                    total: currentQuestion.total_questions,
-                    time: formattedTime
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Summary saved:', data);
-            })
-            .catch(error => {
-                console.error('Error saving summary:', error);
-            });
+            qEl.textContent = "🎉 Quiz Complete!";
+            cEl.innerHTML = "";
+            rEl.innerHTML = `Your score: ${score} / ${currentQuestion.total_questions}<br>Total time: ${formattedTime}`;
+            tEl.style.display = 'none';
+            
+            // Send the main quiz results to quiz_results.txt
+            fetch('?action=saveResult', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    score: score,
+                    total: currentQuestion.total_questions,
+                    time: formattedTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Summary saved:', data);
+            })
+            .catch(error => {
+                console.error('Error saving summary:', error);
+            });
 
-            // Send the detailed log of incorrect answers to studentlogs.txt
-            fetch('?action=saveStudentLog', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: studentName,
-                    incorrectAnswers: incorrectAnswersLog
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Detailed log saved:', data);
-            })
-            .catch(error => {
-                console.error('Error saving detailed log:', error);
-            });
+            // Send the detailed log of incorrect answers to studentlog.txt
+            fetch('?action=saveStudentLog', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    incorrectAnswers: incorrectAnswersLog
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Detailed log saved:', data);
+            })
+            .catch(error => {
+                console.error('Error saving detailed log:', error);
+            });
 
-            // Save score to local storage for scoreboard display
-            saveScore(score, currentQuestion.total_questions, formattedTime);
-            loadScoreboard();
-        }
+            // Save score to local storage for scoreboard display
+            saveScore(score, currentQuestion.total_questions, formattedTime);
+            loadScoreboard();
+        }
 
-        loadScoreboard();
-    </script>
+        loadScoreboard();
+    </script>
 </body>
 </html>
