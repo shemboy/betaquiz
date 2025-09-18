@@ -209,13 +209,6 @@ $questions = [
     // Add more questions here. They will be safe on the server.
 ];
 
-$students = [
-    '2024001' => 'John Doe',
-    '2024002' => 'Jane Smith',
-    '2024003' => 'Peter Jones',
-    // Add more student IDs and names here
-];
-
 // Start a session to keep track of answered questions.
 session_start();
 header('Content-Type: text/html');
@@ -288,8 +281,8 @@ switch ($action) {
         exit;
 
     case 'saveResult':
-        // This is the action to save the quiz summary results
         $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? 'UnknownID';
         $name = $data['name'] ?? 'Anonymous';
         $score = $data['score'] ?? 0;
         $total = $data['total'] ?? 0;
@@ -297,7 +290,7 @@ switch ($action) {
         $date = date('Y-m-d H:i:s');
 
         // Format the result string for the summary log
-        $result_line = "Date: $date | Name: $name | Score: $score/$total | Time: $time\n";
+        $result_line = "Date: $date | ID: $id | Name: $name | Score: $score/$total | Time: $time\n";
 
         // Save the result to a file (quiz_results.txt)
         $file_path = 'quiz_results.txt';
@@ -307,8 +300,8 @@ switch ($action) {
         exit;
 
     case 'saveStudentLog':
-        // This is the new action to save the detailed student log
         $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? 'UnknownID';
         $name = $data['name'] ?? 'Anonymous';
         $date = date('Y-m-d H:i:s');
         $incorrectAnswers = $data['incorrectAnswers'] ?? [];
@@ -319,7 +312,7 @@ switch ($action) {
 
         if ($log_handle) {
             // Write the header for the log entry
-            fwrite($log_handle, "--- Student Log for $name on $date ---\n");
+            fwrite($log_handle, "--- Student Log for ID: $id, Name: $name on $date ---\n");
             
             // Log each incorrect answer
             if (count($incorrectAnswers) > 0) {
@@ -495,10 +488,11 @@ switch ($action) {
 <body>
     <h1>🧠 Quiz</h1>
 
-    <div class="container" id="quiz-app">
-        <div id="welcomeScreen">
-            <p>Please enter your **Student ID** to start the quiz:</p>
-            <input type="text" id="studentIdInput" placeholder="Enter your student ID" />
+    <div class="container" id="quiz-app">
+        <div id="welcomeScreen">
+            <p>Please enter your Student ID number to start the quiz:</p>
+            <input type="text" id="idInput" placeholder="Enter your Student ID" />
+            <input type="text" id="nameInput" placeholder="Enter your Name" style="display:none;" />
             <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
         </div>
         
@@ -520,22 +514,42 @@ switch ($action) {
         let score = 0;
         let timeLeft = 60;
         let timerInterval;
-        let studentName = "";
-        let quizStartTime;
-        let currentQuestion = null;
-        // New array to store incorrect answers
-        let incorrectAnswersLog = []; 
+        let studentId = "";
+let studentName = "";
 
-        const startBtn = document.getElementById('startBtn');
-        const qEl = document.getElementById('question');
-        const cEl = document.getElementById('choices');
-        const rEl = document.getElementById('result');
-        const tEl = document.getElementById('timer');
-        const quizEl = document.getElementById('quiz');
-        const scoreList = document.getElementById('scoreList');
-        const nameInput = document.getElementById('nameInput');
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        const scoreboard = document.getElementById('scoreboard');
+const idInput = document.getElementById('idInput');
+const nameInput = document.getElementById('nameInput');
+const startBtn = document.getElementById('startBtn');
+const welcomeScreen = document.getElementById('welcomeScreen');
+
+idInput.addEventListener('blur', () => {
+    if (idInput.value.trim() !== "") {
+        nameInput.style.display = 'block';
+    }
+});
+
+startBtn.addEventListener('click', () => {
+    const id = idInput.value.trim();
+    const name = nameInput.value.trim();
+    if (id === "") {
+        alert("Please enter your Student ID number.");
+        return;
+    }
+    if (name === "") {
+        alert("Please enter your name.");
+        return;
+    }
+    studentId = id;
+    studentName = name;
+    welcomeScreen.style.display = 'none';
+    quizEl.style.display = 'block';
+    tEl.style.display = 'block';
+    currentIndex = 0;
+    score = 0;
+    incorrectAnswersLog = [];
+    quizStartTime = new Date();
+    fetch('?action=start').then(() => getNextQuestion());
+});
 
         function loadScoreboard() {
             const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
@@ -672,10 +686,9 @@ switch ($action) {
             // Send the main quiz results to quiz_results.txt
             fetch('?action=saveResult', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    id: studentId,
                     name: studentName,
                     score: score,
                     total: currentQuestion.total_questions,
@@ -693,10 +706,9 @@ switch ($action) {
             // Send the detailed log of incorrect answers to studentlogs.txt
             fetch('?action=saveStudentLog', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    id: studentId,
                     name: studentName,
                     incorrectAnswers: incorrectAnswersLog
                 })
