@@ -209,6 +209,14 @@ $questions = [
     // Add more questions here. They will be safe on the server.
 ];
 
+// List of students (for demonstration purposes)
+$students = [
+    '2024001' => 'John Doe',
+    '2024002' => 'Jane Smith',
+    '2024003' => 'Peter Jones',
+    // Add more student IDs and names here
+];
+
 // Start a session to keep track of answered questions.
 session_start();
 header('Content-Type: text/html');
@@ -331,6 +339,12 @@ switch ($action) {
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Could not open log file.']);
         }
+        exit;
+
+    case 'getStudentName':
+        $id = $_GET['id'] ?? '';
+        $name = $students[$id] ?? '';
+        echo json_encode(['name' => $name]);
         exit;
     }
 }
@@ -490,8 +504,9 @@ switch ($action) {
 
     <div class="container" id="quiz-app">
         <div id="welcomeScreen">
-            <p>Please enter your name to start the quiz:</p>
-            <input type="text" id="nameInput" placeholder="Enter your name" />
+            <p>Please enter your Student ID number to start the quiz:</p>
+            <input type="text" id="idInput" placeholder="Enter your Student ID" />
+            <input type="text" id="nameInput" placeholder="Name will appear here" readonly style="display:none;" />
             <button id="startBtn" class="primary-btn">▶️ Start Quiz</button>
         </div>
         
@@ -527,6 +542,7 @@ switch ($action) {
         const quizEl = document.getElementById('quiz');
         const scoreList = document.getElementById('scoreList');
         const nameInput = document.getElementById('nameInput');
+        const idInput = document.getElementById('idInput');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const scoreboard = document.getElementById('scoreboard');
 
@@ -543,19 +559,42 @@ switch ($action) {
             localStorage.setItem('quizScores', JSON.stringify(scores.slice(0, 10)));
         }
 
+        idInput.addEventListener('blur', async () => {
+            const id = idInput.value.trim();
+            if (id !== "") {
+                const res = await fetch(`?action=getStudentName&id=${encodeURIComponent(id)}`);
+                const data = await res.json();
+                if (data.name) {
+                    nameInput.value = data.name;
+                    nameInput.style.display = 'block';
+                } else {
+                    nameInput.value = "ID not found!";
+                    nameInput.style.display = 'block';
+                }
+            } else {
+                nameInput.style.display = 'none';
+            }
+        });
+
         startBtn.addEventListener('click', () => {
+            const id = idInput.value.trim();
             const name = nameInput.value.trim();
-            if (name === "") {
-                alert("Please enter your name to start.");
+            if (id === "") {
+                alert("Please enter your Student ID number.");
                 return;
             }
+            if (name === "" || name === "ID not found!") {
+                alert("Please enter a valid Student ID.");
+                return;
+            }
+            studentId = id;
             studentName = name;
             welcomeScreen.style.display = 'none';
             quizEl.style.display = 'block';
             tEl.style.display = 'block';
             currentIndex = 0;
             score = 0;
-            incorrectAnswersLog = []; // Reset the log
+            incorrectAnswersLog = [];
             quizStartTime = new Date();
             fetch('?action=start').then(() => getNextQuestion());
         });
