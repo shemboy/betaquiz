@@ -554,22 +554,37 @@ switch ($action) {
             localStorage.setItem('quizScores', JSON.stringify(scores.slice(0, 10)));
         }
 
-        idInput.addEventListener('blur', async () => {
-            const id = idInput.value.trim();
-            if (id !== "") {
-                const res = await fetch(`?action=getStudentName&id=${encodeURIComponent(id)}`);
-                const data = await res.json();
-                if (data.name) {
-                    nameInput.value = data.name;
-                    nameInput.style.display = 'block';
-                } else {
-                    nameInput.value = "ID not found!";
-                    nameInput.style.display = 'block';
-                }
-            } else {
-                nameInput.style.display = 'none';
-            }
-        });
+        // Auto-display name as you type the ID
+idInput.addEventListener('input', async () => {
+    const id = idInput.value.trim();
+    if (id !== "") {
+        const res = await fetch(`?action=getStudentName&id=${encodeURIComponent(id)}`);
+        const data = await res.json();
+        if (data.name) {
+            nameInput.value = data.name;
+            nameInput.style.display = 'block';
+        } else {
+            nameInput.value = "ID not found!";
+            nameInput.style.display = 'block';
+        }
+    } else {
+        nameInput.style.display = 'none';
+    }
+});
+
+// Allow Enter key to start quiz from ID input
+idInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        startBtn.click();
+    }
+});
+
+// Allow Enter key to start quiz from name input (if you ever make it editable)
+nameInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        startBtn.click();
+    }
+});
 
         startBtn.addEventListener('click', () => {
             const id = idInput.value.trim();
@@ -679,6 +694,16 @@ switch ($action) {
                 submitBtn.textContent = "Submit";
                 submitBtn.onclick = () => submitAnswer(input.value.trim());
                 cEl.appendChild(submitBtn);
+
+                // Allow Enter key to submit answer
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        submitBtn.click();
+                    }
+                });
+
+                // Autofocus for better UX
+                input.focus();
             }
         }
 
