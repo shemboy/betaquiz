@@ -1,5 +1,4 @@
 <?php
-<?php
 $students = [
     '2024001' => 'John Doe',
     '2024002' => 'Jane Smith',
@@ -234,3 +233,4 @@ if (isset($_GET['action'])) {
     </script>
 </body>
 </html>
+
