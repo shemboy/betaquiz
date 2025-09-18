@@ -776,6 +776,7 @@ nameInput.addEventListener('keydown', function(e) {
             // Save score to local storage for scoreboard display
             saveScore(score, currentQuestion.total_questions, formattedTime);
             loadScoreboard();
+            quizStarted = false; // Prevent tab leave logging after quiz is done
         }
 
 document.addEventListener('visibilitychange', function() {
